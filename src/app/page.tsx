@@ -39,8 +39,8 @@ export default async function Home({
 
       <footer className="border-t border-border bg-card">
         <p className="mx-auto max-w-3xl px-4 py-4 text-xs text-muted-foreground sm:px-6">
-          PromptBina tidak menghantar data ke pelayan. Draf disimpan pada
-          pelayar anda sahaja.
+          PromptBina menjana prompt pada pelayar anda. Draf disimpan
+          secara tempatan pada peranti ini.
         </p>
       </footer>
     </div>

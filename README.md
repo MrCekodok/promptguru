@@ -11,7 +11,7 @@ Isi empat bahagian:
 
 PromptBina menukar jawapan itu kepada brief yang sedia disalin ke Cursor, ChatGPT, Claude, atau pembantu AI yang lain.
 
-Draf disimpan pada pelayar (`localStorage`). Tiada akaun dan tiada data dihantar ke pelayan.
+Jana prompt berlaku pada pelayar. Draf disimpan pada `localStorage`. Tiada akaun. Jika JavaScript tidak berjalan, borang dihantar ke halaman hasil pada aplikasi yang sama.
 
 ## Jalankan secara tempatan
 

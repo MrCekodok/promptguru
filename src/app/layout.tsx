@@ -26,6 +26,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              textarea, input, select { width: 100%; max-width: 100%; box-sizing: border-box; font: inherit; }
+              textarea { min-height: 7rem; display: block; }
+              input, select, textarea { border: 1px solid #c5d4ea; border-radius: 8px; padding: .45rem .65rem; background: #fff; }
+              button[type="submit"] { background: #1d4ed8; color: #fff; border: 0; border-radius: 8px; padding: .65rem 1.1rem; cursor: pointer; font: inherit; }
+            `,
+          }}
+        />
         {children}
       </body>
     </html>

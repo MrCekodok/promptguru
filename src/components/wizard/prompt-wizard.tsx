@@ -1,12 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useActionState, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { RotateCcwIcon, SparklesIcon, WandSparklesIcon } from "lucide-react";
 
-import Link from "next/link";
-import { janaPrompt } from "@/app/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { StepHasil } from "@/components/wizard/step-hasil";
 import { StepMasalah } from "@/components/wizard/step-masalah";
@@ -14,7 +11,7 @@ import { StepMenu } from "@/components/wizard/step-menu";
 import { StepSasaran } from "@/components/wizard/step-sasaran";
 import { StepSituasi } from "@/components/wizard/step-situasi";
 import { examples } from "@/lib/examples";
-import { missingFields } from "@/lib/prompt-builder";
+import { buildPrompt, missingFields } from "@/lib/prompt-builder";
 import {
   clearSession,
   hasStoredSession,
@@ -59,12 +56,10 @@ export function PromptWizard({
   initialDraft?: PromptDraft;
   contohId?: string;
 }) {
-  const router = useRouter();
   const [draft, setDraft] = useState<PromptDraft>(
     () => initialDraft ?? emptyDraft()
   );
-  const [state, formAction, pending] = useActionState(janaPrompt, null);
-  const prompt = state?.prompt ?? "";
+  const [prompt, setPrompt] = useState("");
   const hasSaved = useSyncExternalStore(
     subscribeSession,
     hasStoredSession,
@@ -98,6 +93,17 @@ export function PromptWizard({
     setDraft((current) => ({ ...current, ...patch }));
   }
 
+  function applyExample(id: string) {
+    const example = examples.find((item) => item.id === id);
+    if (!example) return;
+    setDraft(example.draft);
+    setPrompt("");
+    document.getElementById("bahagian-masalah")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+
   function resume() {
     const saved = loadSession();
     if (!saved) return;
@@ -110,18 +116,21 @@ export function PromptWizard({
 
   function restart() {
     clearSession();
-    router.push("/");
+    setDraft(emptyDraft());
+    setPrompt("");
+  }
+
+  function generate(event?: { preventDefault: () => void }) {
+    event?.preventDefault();
+    const nextPrompt = buildPrompt(draft);
+    setPrompt(nextPrompt);
   }
 
   return (
     <div className="mx-auto w-full max-w-3xl">
       {prompt ? (
-        <div className="mb-8">
-          <StepHasil
-            key={prompt.slice(0, 48)}
-            prompt={prompt}
-            draft={draft}
-          />
+        <div className="mb-8" id="hasil-prompt">
+          <StepHasil key={prompt.slice(0, 48)} prompt={prompt} draft={draft} />
         </div>
       ) : null}
 
@@ -171,25 +180,36 @@ export function PromptWizard({
           {examples.map((example) => {
             const active = contohId === example.id;
             return (
-              <Link
+              <a
                 key={example.id}
                 href={`/?contoh=${example.id}#bahagian-masalah`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  applyExample(example.id);
+                }}
                 className={cn(
                   "rounded-lg border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-accent",
-                  active ? "border-primary ring-2 ring-primary/20" : "border-border"
+                  active
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-border"
                 )}
               >
                 <p className="font-medium">{example.title}</p>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   {example.blurb}
                 </p>
-              </Link>
+              </a>
             );
           })}
         </div>
       </section>
 
-      <form action={formAction} className="mt-8 grid gap-6 pb-24">
+      <form
+        method="post"
+        action="/hasil"
+        className="mt-8 grid gap-6 pb-24"
+        onSubmit={generate}
+      >
         <FormSection {...SECTIONS[0]}>
           <StepMasalah
             draft={draft}
@@ -227,14 +247,12 @@ export function PromptWizard({
           </p>
           <button
             type="submit"
-            disabled={pending}
-            className={cn(
-              buttonVariants(),
-              "h-10 w-full px-4 sm:w-auto disabled:opacity-60"
-            )}
+            className={cn(buttonVariants(), "h-10 w-full px-4 sm:w-auto")}
+            style={{ background: "#1d4ed8", color: "#fff" }}
+            onClick={generate}
           >
             <WandSparklesIcon data-icon="inline-start" />
-            {pending ? "Menjana…" : "Jana prompt"}
+            Jana prompt
           </button>
         </div>
       </form>
