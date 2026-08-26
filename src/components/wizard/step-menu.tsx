@@ -83,7 +83,7 @@ export function StepMenu({
             key={name}
             type="button"
             onClick={() => addSuggestion(name)}
-            className="rounded-full border border-border bg-background px-2.5 py-1 text-xs text-foreground transition-colors hover:border-primary/40 hover:bg-primary/8"
+            className="rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground transition-colors hover:border-primary/50 hover:bg-accent"
           >
             + {name}
           </button>
@@ -102,7 +102,7 @@ export function StepMenu({
             key={item.id}
             className="grid gap-2 rounded-xl border border-border bg-background p-3 sm:grid-cols-[2rem_1fr_auto] sm:items-start sm:gap-3"
           >
-            <span className="mt-1.5 hidden size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary sm:inline-flex">
+            <span className="mt-1.5 hidden size-7 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground sm:inline-flex">
               {index + 1}
             </span>
             <div className="grid gap-2">

@@ -152,7 +152,7 @@ export function PromptWizard() {
   return (
     <div className="mx-auto w-full max-w-3xl">
       <section className="grid gap-4">
-        <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <p className="inline-flex w-fit items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold tracking-wide text-primary uppercase">
           <SparklesIcon className="size-3.5" />
           Penjana prompt untuk bina aplikasi
         </p>
@@ -200,7 +200,7 @@ export function PromptWizard() {
               key={example.id}
               type="button"
               onClick={() => applyExample(example.id)}
-              className="rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/5"
+              className="rounded-lg border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-accent"
             >
               <p className="font-medium">{example.title}</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -247,11 +247,11 @@ export function PromptWizard() {
           />
         </FormSection>
 
-        <div className="sticky bottom-3 z-10 rounded-xl border border-border bg-card/95 p-3 shadow-lg backdrop-blur sm:p-4">
+        <div className="sticky bottom-3 z-10 rounded-lg border border-border bg-card/95 p-3 shadow-lg backdrop-blur sm:flex sm:items-center sm:justify-between sm:gap-4 sm:p-4">
           {showErrors && issues.length > 0 ? (
-            <p className="mb-2 text-sm text-destructive">{issues[0]}</p>
+            <p className="mb-2 text-sm text-destructive sm:mb-0">{issues[0]}</p>
           ) : (
-            <p className="mb-2 text-sm text-muted-foreground">
+            <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
               Lengkapkan ruangan bertanda * kemudian jana prompt.
             </p>
           )}
@@ -295,18 +295,23 @@ function FormSection({
   return (
     <section
       id={`bahagian-${id}`}
-      className="scroll-mt-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6"
+      className="scroll-mt-4 rounded-lg border border-border bg-card p-4 shadow-sm sm:p-6"
     >
-      <header className="mb-5 border-b border-border pb-4">
-        <p className="text-xs font-medium tracking-wide text-primary uppercase">
-          Bahagian {n} / 4
-        </p>
-        <h2 className="font-heading mt-1 text-xl font-semibold tracking-tight">
-          {title}
-        </h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          {caption}
-        </p>
+      <header className="mb-5 flex items-start gap-3 border-b border-border pb-4">
+        <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+          {n}
+        </span>
+        <div>
+          <p className="text-xs font-semibold tracking-wide text-primary uppercase">
+            Bahagian {n} / 4
+          </p>
+          <h2 className="font-heading mt-0.5 text-xl font-semibold tracking-tight">
+            {title}
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            {caption}
+          </p>
+        </div>
       </header>
       {children}
     </section>

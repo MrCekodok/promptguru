@@ -71,7 +71,7 @@ export function StepHasil({
 
   return (
     <div className="grid gap-5">
-      <div className="rounded-xl border border-primary/20 bg-primary/6 px-4 py-3 text-sm leading-relaxed text-foreground">
+      <div className="rounded-lg border border-primary/20 bg-accent px-4 py-3 text-sm leading-relaxed text-foreground">
         Prompt ini sudah disusun sebagai brief untuk AI (Cursor, ChatGPT, Claude,
         dan seumpamanya). Salin, kemudian tampal sebagai mesej pertama apabila
         anda minta AI membina aplikasi.

@@ -41,7 +41,7 @@ export function StepSituasi({
         sebelum membina aplikasi.
       </p>
 
-      <div className="rounded-2xl border border-primary/15 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--primary),white_94%),var(--card))] p-4 shadow-sm sm:p-6">
+      <div className="rounded-lg border border-primary/20 bg-accent p-4 sm:p-5">
         <p className="mb-3 text-xs font-medium tracking-wide text-primary uppercase">
           Lembaran situasi
         </p>
