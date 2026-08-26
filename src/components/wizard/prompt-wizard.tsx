@@ -1,15 +1,14 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
+  RotateCcwIcon,
   SparklesIcon,
   WandSparklesIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { StepHasil } from "@/components/wizard/step-hasil";
 import { StepMasalah } from "@/components/wizard/step-masalah";
 import { StepMenu } from "@/components/wizard/step-menu";
@@ -17,27 +16,47 @@ import { StepSasaran } from "@/components/wizard/step-sasaran";
 import { StepSituasi } from "@/components/wizard/step-situasi";
 import { examples } from "@/lib/examples";
 import { buildPrompt, isStepComplete, missingFields } from "@/lib/prompt-builder";
-import { clearSession, hasStoredSession, loadSession, saveSession, subscribeSession } from "@/lib/storage";
-import { emptyDraft, type PromptDraft, type WizardStep } from "@/lib/types";
+import {
+  clearSession,
+  hasStoredSession,
+  loadSession,
+  saveSession,
+  subscribeSession,
+} from "@/lib/storage";
+import { emptyDraft, type PromptDraft } from "@/lib/types";
 
-function isFormStep(step: WizardStep): step is 1 | 2 | 3 | 4 {
-  return step === 1 || step === 2 || step === 3 || step === 4;
-}
-
-const STEPS: { id: WizardStep; title: string; caption: string }[] = [
-  { id: 0, title: "Mula", caption: "Pengenalan" },
-  { id: 1, title: "Masalah", caption: "Apa yang patah" },
-  { id: 2, title: "Sasaran", caption: "Untuk siapa" },
-  { id: 3, title: "Menu", caption: "Laluan pengguna" },
-  { id: 4, title: "Situasi", caption: "Isi tempat kosong" },
-  { id: 5, title: "Prompt", caption: "Siap salin" },
-];
+const SECTIONS = [
+  {
+    id: "masalah",
+    n: "1",
+    title: "Masalah",
+    caption: "Apa yang patah hari ini, siapa terjejas, dan mengapa perlu diselesaikan.",
+  },
+  {
+    id: "sasaran",
+    n: "2",
+    title: "Sasaran pengguna",
+    caption: "Siapa yang akan guna, apa yang mereka mahu capai, dan hasil yang dijangka.",
+  },
+  {
+    id: "menu",
+    n: "3",
+    title: "Cadangan menu",
+    caption: "Halaman yang pengguna akan buka dalam aplikasi.",
+  },
+  {
+    id: "situasi",
+    n: "4",
+    title: "Pengisian borang situasi",
+    caption: "Isi tempat kosong tentang situasi sebenar untuk pembinaan aplikasi.",
+  },
+] as const;
 
 export function PromptWizard() {
   const [draft, setDraft] = useState<PromptDraft>(emptyDraft);
-  const [step, setStep] = useState<WizardStep>(0);
   const [showErrors, setShowErrors] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [showResult, setShowResult] = useState(false);
   const hasSaved = useSyncExternalStore(
     subscribeSession,
     hasStoredSession,
@@ -45,296 +64,134 @@ export function PromptWizard() {
   );
 
   useEffect(() => {
-    if (step === 0) return;
-    saveSession({ draft, step });
-  }, [draft, step]);
+    const hasContent =
+      draft.masalah.trim() ||
+      draft.sasaranPengguna.trim() ||
+      draft.namaAplikasi.trim() ||
+      draft.menuItems.some((item) => item.name.trim());
+    if (!hasContent) return;
+    saveSession({ draft, step: 1 });
+  }, [draft]);
 
   const generated = useMemo(() => buildPrompt(draft), [draft]);
 
   function patchDraft(patch: Partial<PromptDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
-  }
-
-  function goTo(next: WizardStep) {
-    setShowErrors(false);
-    setStep(next);
-    if (next === 5) {
-      setPrompt(buildPrompt(draft));
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function next() {
-    if (step === 0) {
-      goTo(1);
-      return;
-    }
-    if (isFormStep(step)) {
-      if (!isStepComplete(step, draft)) {
-        setShowErrors(true);
-        return;
-      }
-      goTo((step + 1) as WizardStep);
-    }
-  }
-
-  function back() {
-    if (step === 0) return;
-    goTo((step - 1) as WizardStep);
+    setShowResult(false);
   }
 
   function applyExample(id: string) {
     const example = examples.find((item) => item.id === id);
     if (!example) return;
     setDraft(example.draft);
-    goTo(1);
+    setShowErrors(false);
+    setShowResult(false);
+    setPrompt("");
+    document.getElementById("bahagian-masalah")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }
 
   function resume() {
     const saved = loadSession();
     if (!saved) return;
     setDraft(saved.draft);
-    goTo(saved.step === 0 ? 1 : saved.step);
-  }
-
-  function startFresh() {
-    clearSession();
-    setDraft(emptyDraft());
-    setPrompt("");
-    goTo(1);
+    setShowErrors(false);
+    setShowResult(false);
+    document.getElementById("bahagian-masalah")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }
 
   function restart() {
     clearSession();
     setDraft(emptyDraft());
     setPrompt("");
-    goTo(0);
+    setShowErrors(false);
+    setShowResult(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const progressValue =
-    step === 0 ? 0 : step === 5 ? 100 : Math.round(((step - 1) / 4) * 100);
-  const current = STEPS[step];
-  const issues = isFormStep(step) ? missingFields(step, draft) : [];
+  function generate() {
+    const incomplete = ([1, 2, 3, 4] as const).find(
+      (step) => !isStepComplete(step, draft)
+    );
+    if (incomplete) {
+      setShowErrors(true);
+      const target =
+        incomplete === 1
+          ? "bahagian-masalah"
+          : incomplete === 2
+            ? "bahagian-sasaran"
+            : incomplete === 3
+              ? "bahagian-menu"
+              : "bahagian-situasi";
+      document.getElementById(target)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
+    setShowErrors(false);
+    setPrompt(buildPrompt(draft));
+    setShowResult(true);
+    window.setTimeout(() => {
+      document.getElementById("bahagian-hasil")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+  }
+
+  const issues = ([1, 2, 3, 4] as const).flatMap((step) =>
+    showErrors ? missingFields(step, draft) : []
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      {step > 0 ? (
-        <div className="mb-6 grid gap-3">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium tracking-wide text-primary uppercase">
-                Langkah {Math.min(step, 4)} / 4
-              </p>
-              <h2 className="font-heading text-2xl font-semibold tracking-tight">
-                {current.title}
-              </h2>
-              <p className="text-sm text-muted-foreground">{current.caption}</p>
-            </div>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {progressValue}%
-            </p>
-          </div>
-          <Progress value={progressValue} className="gap-0">
-            <span className="sr-only">Kemajuan {progressValue} peratus</span>
-          </Progress>
-          <ol className="hidden gap-1 sm:grid sm:grid-cols-5">
-            {STEPS.slice(1).map((item) => {
-              const active = item.id === step || (step === 5 && item.id === 5);
-              const done = item.id < step;
-              return (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (item.id < step || (step === 5 && item.id <= 5)) {
-                        goTo(item.id);
-                      }
-                    }}
-                    className={`w-full rounded-lg px-2 py-1.5 text-left text-xs ${
-                      active
-                        ? "bg-primary text-primary-foreground"
-                        : done
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {item.title}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      ) : null}
-
-      {step === 0 ? (
-        <Intro
-          hasSaved={hasSaved}
-          onStart={startFresh}
-          onResume={resume}
-          onExample={applyExample}
-        />
-      ) : null}
-
-      {step === 1 ? (
-        <StepMasalah
-          draft={draft}
-          onChange={patchDraft}
-          showErrors={showErrors}
-        />
-      ) : null}
-      {step === 2 ? (
-        <StepSasaran
-          draft={draft}
-          onChange={patchDraft}
-          showErrors={showErrors}
-        />
-      ) : null}
-      {step === 3 ? (
-        <StepMenu draft={draft} onChange={patchDraft} showErrors={showErrors} />
-      ) : null}
-      {step === 4 ? (
-        <StepSituasi
-          draft={draft}
-          onChange={patchDraft}
-          showErrors={showErrors}
-        />
-      ) : null}
-      {step === 5 ? (
-        <StepHasil
-          prompt={prompt || generated}
-          draft={draft}
-          onPromptChange={setPrompt}
-          onRestart={restart}
-        />
-      ) : null}
-
-      {step > 0 ? (
-        <div className="mt-8 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <Button type="button" variant="ghost" onClick={back} className="h-9 px-3">
-            <ArrowLeftIcon data-icon="inline-start" />
-            Kembali
-          </Button>
-          {step < 5 ? (
-            <div className="flex flex-col items-stretch gap-2 sm:items-end">
-              {showErrors && issues.length > 0 ? (
-                <p className="text-xs text-destructive">{issues[0]}</p>
-              ) : null}
-              <Button type="button" onClick={next} className="h-9 px-3">
-                {step === 4 ? (
-                  <>
-                    <WandSparklesIcon data-icon="inline-start" />
-                    Jana prompt
-                  </>
-                ) : (
-                  <>
-                    Seterusnya
-                    <ArrowRightIcon data-icon="inline-end" />
-                  </>
-                )}
-              </Button>
-            </div>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => goTo(4)}
-              className="h-9 px-3"
-            >
-              Sunting borang
-            </Button>
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function Intro({
-  hasSaved,
-  onStart,
-  onResume,
-  onExample,
-}: {
-  hasSaved: boolean;
-  onStart: () => void;
-  onResume: () => void;
-  onExample: (id: string) => void;
-}) {
-  return (
-    <div className="grid gap-8">
       <section className="grid gap-4">
         <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
           <SparklesIcon className="size-3.5" />
           Penjana prompt untuk bina aplikasi
         </p>
         <h1 className="font-heading max-w-xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Tulis niat anda. Kami susun menjadi prompt AI yang boleh dibina.
+          Isi empat bahagian ini. Kami susun menjadi prompt AI.
         </h1>
         <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
-          Isi masalah, sasaran pengguna, cadangan menu, dan lembaran situasi.
-          PromptBina akan menukar jawapan itu kepada brief yang sedia ditampal
-          ke Cursor, ChatGPT, atau Claude.
+          Taip terus dalam ruangan di bawah: masalah, sasaran pengguna,
+          cadangan menu, dan situasi. Kemudian jana prompt untuk ditampal ke
+          Cursor, ChatGPT, atau Claude.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={onStart} className="h-10 px-4">
-            Mula dari kosong
-            <ArrowRightIcon data-icon="inline-end" />
-          </Button>
           {hasSaved ? (
             <Button
               type="button"
               variant="outline"
-              onClick={onResume}
+              onClick={resume}
               className="h-10 px-4"
             >
-              Sambung draf tersimpan
+              Muat draf tersimpan
             </Button>
           ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={restart}
+            className="h-10 px-4"
+          >
+            <RotateCcwIcon data-icon="inline-start" />
+            Kosongkan borang
+          </Button>
         </div>
       </section>
 
-      <ol className="grid gap-3 sm:grid-cols-2">
-        {[
-          {
-            n: "1",
-            t: "Masalah",
-            d: "Apa yang patah hari ini, siapa terjejas, dan mengapa perlu diselesaikan.",
-          },
-          {
-            n: "2",
-            t: "Sasaran pengguna",
-            d: "Siapa yang akan guna, apa yang mereka mahu siap, dan hasil yang dijangka.",
-          },
-          {
-            n: "3",
-            t: "Cadangan menu",
-            d: "Halaman yang pengguna akan buka: laman utama, rekod, laporan, tetapan.",
-          },
-          {
-            n: "4",
-            t: "Lembaran situasi",
-            d: "Isi tempat kosong: nama, platform, bila, di mana, ciri wajib, dan kekangan.",
-          },
-        ].map((item) => (
-          <li
-            key={item.n}
-            className="rounded-xl border border-border bg-card p-4 shadow-sm"
-          >
-            <p className="text-xs font-medium text-primary">Langkah {item.n}</p>
-            <p className="mt-1 font-medium">{item.t}</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {item.d}
-            </p>
-          </li>
-        ))}
-      </ol>
-
-      <section className="grid gap-3">
+      <section className="mt-8 grid gap-3">
         <div>
-          <h2 className="font-heading text-lg font-semibold">Atau mula dengan contoh</h2>
+          <h2 className="font-heading text-lg font-semibold">Isi dengan contoh</h2>
           <p className="text-sm text-muted-foreground">
-            Contoh akan mengisi semua ruangan. Anda boleh sunting sebelum menjana prompt.
+            Contoh akan mengisi keempat-empat bahagian. Anda boleh sunting selepas itu.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
@@ -342,7 +199,7 @@ function Intro({
             <button
               key={example.id}
               type="button"
-              onClick={() => onExample(example.id)}
+              onClick={() => applyExample(example.id)}
               className="rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/5"
             >
               <p className="font-medium">{example.title}</p>
@@ -353,6 +210,105 @@ function Intro({
           ))}
         </div>
       </section>
+
+      <form
+        className="mt-8 grid gap-6"
+        onSubmit={(event) => {
+          event.preventDefault();
+          generate();
+        }}
+      >
+        <FormSection {...SECTIONS[0]}>
+          <StepMasalah
+            draft={draft}
+            onChange={patchDraft}
+            showErrors={showErrors}
+          />
+        </FormSection>
+        <FormSection {...SECTIONS[1]}>
+          <StepSasaran
+            draft={draft}
+            onChange={patchDraft}
+            showErrors={showErrors}
+          />
+        </FormSection>
+        <FormSection {...SECTIONS[2]}>
+          <StepMenu
+            draft={draft}
+            onChange={patchDraft}
+            showErrors={showErrors}
+          />
+        </FormSection>
+        <FormSection {...SECTIONS[3]}>
+          <StepSituasi
+            draft={draft}
+            onChange={patchDraft}
+            showErrors={showErrors}
+          />
+        </FormSection>
+
+        <div className="sticky bottom-3 z-10 rounded-xl border border-border bg-card/95 p-3 shadow-lg backdrop-blur sm:p-4">
+          {showErrors && issues.length > 0 ? (
+            <p className="mb-2 text-sm text-destructive">{issues[0]}</p>
+          ) : (
+            <p className="mb-2 text-sm text-muted-foreground">
+              Lengkapkan ruangan bertanda * kemudian jana prompt.
+            </p>
+          )}
+          <Button type="submit" className="h-10 w-full px-4 sm:w-auto">
+            <WandSparklesIcon data-icon="inline-start" />
+            Jana prompt
+          </Button>
+        </div>
+      </form>
+
+      {showResult ? (
+        <section id="bahagian-hasil" className="mt-8 scroll-mt-4">
+          <h2 className="font-heading mb-4 text-2xl font-semibold tracking-tight">
+            Prompt siap
+          </h2>
+          <StepHasil
+            prompt={prompt || generated}
+            draft={draft}
+            onPromptChange={setPrompt}
+            onRestart={restart}
+          />
+        </section>
+      ) : null}
     </div>
+  );
+}
+
+function FormSection({
+  id,
+  n,
+  title,
+  caption,
+  children,
+}: {
+  id: string;
+  n: string;
+  title: string;
+  caption: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      id={`bahagian-${id}`}
+      className="scroll-mt-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6"
+    >
+      <header className="mb-5 border-b border-border pb-4">
+        <p className="text-xs font-medium tracking-wide text-primary uppercase">
+          Bahagian {n} / 4
+        </p>
+        <h2 className="font-heading mt-1 text-xl font-semibold tracking-tight">
+          {title}
+        </h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          {caption}
+        </p>
+      </header>
+      {children}
+    </section>
   );
 }
