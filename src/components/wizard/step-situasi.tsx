@@ -3,15 +3,14 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Blank, Field } from "@/components/wizard/field";
+import { cn } from "@/lib/utils";
 import type { BahasaUI, Platform, PromptDraft } from "@/lib/types";
+
+const selectClass = cn(
+  "h-9 w-full rounded-lg border border-input bg-background px-2.5 text-sm text-foreground outline-none",
+  "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+);
 
 export function StepSituasi({
   draft,
@@ -23,8 +22,6 @@ export function StepSituasi({
   showErrors: boolean;
 }) {
   const namaError = showErrors && draft.namaAplikasi.trim().length < 2;
-  const platformError = showErrors && !draft.platform;
-  const bahasaError = showErrors && !draft.bahasaUI;
   const ciriError =
     showErrors && draft.ciriWajib.filter((item) => item.trim()).length < 1;
 
@@ -88,66 +85,39 @@ export function StepSituasi({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Platform"
-          required
-          error={platformError}
-          hint={platformError ? "Pilih satu platform." : undefined}
-        >
-          <Select
-            value={draft.platform || null}
-            onValueChange={(value) =>
-              onChange({ platform: (value ?? "") as Platform | "" })
+        <Field label="Platform" required>
+          <select
+            className={selectClass}
+            value={draft.platform || "web"}
+            onChange={(event) =>
+              onChange({ platform: event.target.value as Platform })
             }
           >
-            <SelectTrigger
-              className="h-9 w-full bg-background"
-              aria-invalid={platformError || undefined}
-            >
-              <SelectValue placeholder="Pilih platform" />
-            </SelectTrigger>
-            <SelectContent align="start" alignItemWithTrigger={false}>
-              <SelectItem value="web">Laman web</SelectItem>
-              <SelectItem value="telefon">Telefon / mudah alih</SelectItem>
-              <SelectItem value="kedua-dua">Web yang sesuai di telefon juga</SelectItem>
-              <SelectItem value="desktop">Desktop</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="web">Laman web</option>
+            <option value="telefon">Telefon / mudah alih</option>
+            <option value="kedua-dua">Web yang sesuai di telefon juga</option>
+            <option value="desktop">Desktop</option>
+          </select>
         </Field>
 
-        <Field
-          label="Bahasa antara muka"
-          required
-          error={bahasaError}
-          hint={bahasaError ? "Pilih bahasa paparan." : undefined}
-        >
-          <Select
-            value={draft.bahasaUI || null}
-            onValueChange={(value) =>
-              onChange({ bahasaUI: (value ?? "") as BahasaUI | "" })
+        <Field label="Bahasa antara muka" required>
+          <select
+            className={selectClass}
+            value={draft.bahasaUI || "bahasa-melayu"}
+            onChange={(event) =>
+              onChange({ bahasaUI: event.target.value as BahasaUI })
             }
           >
-            <SelectTrigger
-              className="h-9 w-full bg-background"
-              aria-invalid={bahasaError || undefined}
-            >
-              <SelectValue placeholder="Pilih bahasa" />
-            </SelectTrigger>
-            <SelectContent align="start" alignItemWithTrigger={false}>
-              <SelectItem value="bahasa-melayu">Bahasa Melayu</SelectItem>
-              <SelectItem value="english">English</SelectItem>
-              <SelectItem value="dwibahasa">Dwibahasa</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="bahasa-melayu">Bahasa Melayu</option>
+            <option value="english">English</option>
+            <option value="dwibahasa">Dwibahasa</option>
+          </select>
         </Field>
       </div>
 
       <div className="grid gap-3">
         <Label className="text-[0.92rem]">
           Tiga ciri yang wajib ada pada versi pertama
-          <span className="text-destructive" aria-hidden>
-            *
-          </span>
         </Label>
         {([0, 1, 2] as const).map((index) => (
           <div key={index} className="flex items-center gap-2">
@@ -170,15 +140,9 @@ export function StepSituasi({
             />
           </div>
         ))}
-        {ciriError ? (
-          <p className="text-xs text-destructive">
-            Isi sekurang-kurangnya ciri pertama.
-          </p>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            Tulis kerja yang pengguna mesti boleh buat, bukan nama butang.
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground">
+          Tulis kerja yang pengguna mesti boleh buat, bukan nama butang.
+        </p>
       </div>
 
       <Field
@@ -195,10 +159,7 @@ export function StepSituasi({
         />
       </Field>
 
-      <Field
-        label="Data yang perlu disimpan"
-        htmlFor="data"
-      >
+      <Field label="Data yang perlu disimpan" htmlFor="data">
         <Textarea
           id="data"
           value={draft.dataDisimpan}

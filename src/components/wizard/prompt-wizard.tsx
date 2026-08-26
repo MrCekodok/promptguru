@@ -15,7 +15,7 @@ import { StepMenu } from "@/components/wizard/step-menu";
 import { StepSasaran } from "@/components/wizard/step-sasaran";
 import { StepSituasi } from "@/components/wizard/step-situasi";
 import { examples } from "@/lib/examples";
-import { buildPrompt, isStepComplete, missingFields } from "@/lib/prompt-builder";
+import { buildPrompt, missingFields } from "@/lib/prompt-builder";
 import {
   clearSession,
   hasStoredSession,
@@ -77,7 +77,6 @@ export function PromptWizard() {
 
   function patchDraft(patch: Partial<PromptDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
-    setShowResult(false);
   }
 
   function applyExample(id: string) {
@@ -115,26 +114,10 @@ export function PromptWizard() {
   }
 
   function generate() {
-    const incomplete = ([1, 2, 3, 4] as const).find(
-      (step) => !isStepComplete(step, draft)
+    const missing = ([1, 2, 3, 4] as const).flatMap((step) =>
+      missingFields(step, draft)
     );
-    if (incomplete) {
-      setShowErrors(true);
-      const target =
-        incomplete === 1
-          ? "bahagian-masalah"
-          : incomplete === 2
-            ? "bahagian-sasaran"
-            : incomplete === 3
-              ? "bahagian-menu"
-              : "bahagian-situasi";
-      document.getElementById(target)?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-      return;
-    }
-    setShowErrors(false);
+    setShowErrors(missing.length > 0);
     setPrompt(buildPrompt(draft));
     setShowResult(true);
     window.setTimeout(() => {
@@ -212,7 +195,7 @@ export function PromptWizard() {
       </section>
 
       <form
-        className="mt-8 grid gap-6"
+        className="mt-8 grid gap-6 pb-24"
         onSubmit={(event) => {
           event.preventDefault();
           generate();
@@ -249,13 +232,15 @@ export function PromptWizard() {
 
         <div className="sticky bottom-3 z-10 rounded-lg border border-border bg-card/95 p-3 shadow-lg backdrop-blur sm:flex sm:items-center sm:justify-between sm:gap-4 sm:p-4">
           {showErrors && issues.length > 0 ? (
-            <p className="mb-2 text-sm text-destructive sm:mb-0">{issues[0]}</p>
+            <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
+              Prompt dijana. Beberapa ruangan masih kosong — anda boleh lengkapkan kemudian.
+            </p>
           ) : (
             <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
-              Lengkapkan ruangan bertanda * kemudian jana prompt.
+              Tekan Jana prompt untuk menyusun brief daripada borang ini.
             </p>
           )}
-          <Button type="submit" className="h-10 w-full px-4 sm:w-auto">
+          <Button type="button" onClick={generate} className="h-10 w-full px-4 sm:w-auto">
             <WandSparklesIcon data-icon="inline-start" />
             Jana prompt
           </Button>
@@ -263,7 +248,7 @@ export function PromptWizard() {
       </form>
 
       {showResult ? (
-        <section id="bahagian-hasil" className="mt-8 scroll-mt-4">
+        <section id="bahagian-hasil" className="mt-8 scroll-mt-24">
           <h2 className="font-heading mb-4 text-2xl font-semibold tracking-tight">
             Prompt siap
           </h2>
