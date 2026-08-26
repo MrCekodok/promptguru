@@ -107,6 +107,7 @@ export function StepMenu({
             </span>
             <div className="grid gap-2">
               <Input
+                name="menuName"
                 value={item.name}
                 onChange={(event) =>
                   updateItem(item.id, { name: event.target.value })
@@ -119,6 +120,7 @@ export function StepMenu({
                 }
               />
               <Textarea
+                name="menuDescription"
                 value={item.description}
                 onChange={(event) =>
                   updateItem(item.id, { description: event.target.value })

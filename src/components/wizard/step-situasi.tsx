@@ -45,6 +45,7 @@ export function StepSituasi({
         <p className="text-[1.05rem] leading-9 text-foreground">
           Aplikasi ini bernama
           <Blank
+            name="namaAplikasi"
             value={draft.namaAplikasi}
             onChange={(namaAplikasi) => onChange({ namaAplikasi })}
             placeholder="nama aplikasi"
@@ -53,6 +54,7 @@ export function StepSituasi({
           />
           . Pengguna akan menggunakannya
           <Blank
+            name="bilaDigunakan"
             value={draft.bilaDigunakan}
             onChange={(bilaDigunakan) => onChange({ bilaDigunakan })}
             placeholder="bila, contoh: setiap pagi"
@@ -61,6 +63,7 @@ export function StepSituasi({
           />
           di
           <Blank
+            name="tempatPenggunaan"
             value={draft.tempatPenggunaan}
             onChange={(tempatPenggunaan) => onChange({ tempatPenggunaan })}
             placeholder="tempat, contoh: bilik darjah"
@@ -69,6 +72,7 @@ export function StepSituasi({
           />
           . Reka bentuknya kelihatan
           <Blank
+            name="gayaRekaBentuk"
             value={draft.gayaRekaBentuk}
             onChange={(gayaRekaBentuk) => onChange({ gayaRekaBentuk })}
             placeholder="contoh: ringkas dan ceria"
@@ -87,6 +91,7 @@ export function StepSituasi({
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Platform" required>
           <select
+            name="platform"
             className={selectClass}
             value={draft.platform || "web"}
             onChange={(event) =>
@@ -102,6 +107,7 @@ export function StepSituasi({
 
         <Field label="Bahasa antara muka" required>
           <select
+            name="bahasaUI"
             className={selectClass}
             value={draft.bahasaUI || "bahasa-melayu"}
             onChange={(event) =>
@@ -125,6 +131,7 @@ export function StepSituasi({
               {index + 1}.
             </span>
             <Input
+              name={`ciri${index}`}
               value={draft.ciriWajib[index]}
               onChange={(event) => setCiri(index, event.target.value)}
               placeholder={
@@ -152,6 +159,7 @@ export function StepSituasi({
       >
         <Textarea
           id="skop"
+          name="diLuarSkop"
           value={draft.diLuarSkop}
           onChange={(event) => onChange({ diLuarSkop: event.target.value })}
           placeholder="Contoh: Jangan bina log masuk, e-mel, atau pembayaran. Data cukup disimpan pada pelayar."
@@ -162,6 +170,7 @@ export function StepSituasi({
       <Field label="Data yang perlu disimpan" htmlFor="data">
         <Textarea
           id="data"
+          name="dataDisimpan"
           value={draft.dataDisimpan}
           onChange={(event) => onChange({ dataDisimpan: event.target.value })}
           placeholder="Contoh: Nama murid, kelas, tarikh, status kehadiran."
@@ -176,6 +185,7 @@ export function StepSituasi({
       >
         <Textarea
           id="kekangan"
+          name="kekangan"
           value={draft.kekangan}
           onChange={(event) => onChange({ kekangan: event.target.value })}
           placeholder="Contoh: Mesti mudah pada telefon. Internet kadang-kadang terputus."

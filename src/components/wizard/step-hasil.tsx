@@ -1,54 +1,56 @@
 "use client";
 
-import { useState } from "react";
-import { CheckIcon, CopyIcon, DownloadIcon, RotateCcwIcon } from "lucide-react";
+import { useRef, useState } from "react";
+import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { slugifyName } from "@/lib/prompt-builder";
 import type { PromptDraft } from "@/lib/types";
 
 export function StepHasil({
   prompt,
   draft,
-  onPromptChange,
-  onRestart,
 }: {
   prompt: string;
   draft: PromptDraft;
-  onPromptChange: (value: string) => void;
-  onRestart: () => void;
 }) {
-  const [copyState, setCopyState] = useState<{
-    prompt: string;
-    ok: boolean;
-    error: string;
-  } | null>(null);
-  const copied = copyState?.prompt === prompt && copyState.ok;
-  const copyError =
-    copyState?.prompt === prompt && !copyState.ok ? copyState.error : "";
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [text, setText] = useState(prompt);
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState("");
 
   async function copyPrompt() {
+    const value = textareaRef.current?.value || text;
     try {
-      await navigator.clipboard.writeText(prompt);
-      setCopyState({ prompt, ok: true, error: "" });
-      window.setTimeout(() => {
-        setCopyState((current) =>
-          current?.prompt === prompt && current.ok ? null : current
-        );
-      }, 2000);
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setCopyError("");
+      window.setTimeout(() => setCopied(false), 2000);
+      return;
     } catch {
-      setCopyState({
-        prompt,
-        ok: false,
-        error:
-          "Tidak dapat menyalin secara automatik. Sila pilih teks dan salin sendiri.",
-      });
+      // fall through
+    }
+    const node = textareaRef.current;
+    if (!node) {
+      setCopyError("Sila pilih teks prompt dan tekan Ctrl+C atau Cmd+C.");
+      return;
+    }
+    node.focus();
+    node.select();
+    const ok = document.execCommand("copy");
+    if (ok) {
+      setCopied(true);
+      setCopyError("");
+      window.setTimeout(() => setCopied(false), 2000);
+    } else {
+      setCopyError("Sila pilih teks prompt dan tekan Ctrl+C atau Cmd+C.");
     }
   }
 
   function downloadPrompt() {
-    const blob = new Blob([prompt], { type: "text/markdown;charset=utf-8" });
+    const value = textareaRef.current?.value || text;
+    const blob = new Blob([value], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -59,26 +61,23 @@ export function StepHasil({
     URL.revokeObjectURL(url);
   }
 
-  if (!prompt.trim()) {
-    return (
-      <div className="rounded-xl border border-dashed border-border bg-muted/40 px-4 py-10 text-center">
-        <p className="text-sm text-muted-foreground">
-          Prompt belum dapat dijana. Kembali dan lengkapkan borang dahulu.
-        </p>
-      </div>
-    );
-  }
+  if (!prompt.trim()) return null;
 
   return (
-    <div className="grid gap-5">
-      <div className="rounded-lg border border-primary/20 bg-accent px-4 py-3 text-sm leading-relaxed text-foreground">
-        Prompt ini sudah disusun sebagai brief untuk AI (Cursor, ChatGPT, Claude,
-        dan seumpamanya). Salin, kemudian tampal sebagai mesej pertama apabila
-        anda minta AI membina aplikasi.
-      </div>
+    <section
+      id="bahagian-hasil"
+      className="scroll-mt-24 rounded-lg border-2 border-primary bg-card p-4 shadow-sm sm:p-6"
+    >
+      <h2 className="font-heading text-2xl font-semibold tracking-tight">
+        Prompt siap
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        Salin teks ini, kemudian tampal ke Cursor, ChatGPT, Claude, atau
+        pembantu AI yang lain untuk membina aplikasi.
+      </p>
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={copyPrompt} className="h-9 px-3">
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" onClick={copyPrompt} className="h-10 px-4">
           {copied ? (
             <CheckIcon data-icon="inline-start" />
           ) : (
@@ -90,37 +89,31 @@ export function StepHasil({
           type="button"
           variant="outline"
           onClick={downloadPrompt}
-          className="h-9 px-3"
+          className="h-10 px-4"
         >
           <DownloadIcon data-icon="inline-start" />
           Muat turun .md
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onRestart}
-          className="h-9 px-3"
+        <a
+          href={`data:text/plain;charset=utf-8,${encodeURIComponent(text)}`}
+          download={`${slugifyName(draft.namaAplikasi)}.txt`}
+          className={cn(buttonVariants({ variant: "ghost" }), "h-10 px-4")}
         >
-          <RotateCcwIcon data-icon="inline-start" />
-          Mula semula
-        </Button>
+          Muat turun .txt
+        </a>
       </div>
 
       {copyError ? (
-        <p className="text-xs text-destructive">{copyError}</p>
+        <p className="mt-2 text-xs text-destructive">{copyError}</p>
       ) : null}
 
-      <Textarea
-        value={prompt}
-        onChange={(event) => onPromptChange(event.target.value)}
+      <textarea
+        ref={textareaRef}
+        value={text}
+        onChange={(event) => setText(event.target.value)}
         aria-label="Prompt yang dijana"
-        className="min-h-[28rem] bg-background font-mono text-[0.8rem] leading-relaxed md:text-[0.8rem]"
+        className="mt-4 min-h-[22rem] w-full resize-y rounded-lg border border-input bg-background p-3 font-mono text-[0.8rem] leading-relaxed text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       />
-
-      <p className="text-xs text-muted-foreground">
-        Anda boleh sunting prompt di atas sebelum menyalin. Perubahan ini tidak
-        mengubah jawapan pada langkah sebelumnya.
-      </p>
-    </div>
+    </section>
   );
 }

@@ -31,6 +31,7 @@ export function StepSasaran({
       >
         <Textarea
           id="sasaran"
+          name="sasaranPengguna"
           value={draft.sasaranPengguna}
           aria-invalid={sasaranError || undefined}
           onChange={(event) => onChange({ sasaranPengguna: event.target.value })}
@@ -52,6 +53,7 @@ export function StepSasaran({
       >
         <Textarea
           id="matlamat"
+          name="matlamatPengguna"
           value={draft.matlamatPengguna}
           aria-invalid={matlamatError || undefined}
           onChange={(event) =>
@@ -69,6 +71,7 @@ export function StepSasaran({
       >
         <Textarea
           id="konteks"
+          name="konteksPenggunaan"
           value={draft.konteksPenggunaan}
           onChange={(event) =>
             onChange({ konteksPenggunaan: event.target.value })
@@ -85,6 +88,7 @@ export function StepSasaran({
       >
         <Textarea
           id="hasil"
+          name="hasilDijangka"
           value={draft.hasilDijangka}
           onChange={(event) => onChange({ hasilDijangka: event.target.value })}
           placeholder="Contoh: Rekod harian tersimpan dan guru boleh muat turun laporan bulanan."

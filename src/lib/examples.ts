@@ -8,9 +8,13 @@ export type ExamplePreset = {
 };
 
 function menu(
+  prefix: string,
   items: { name: string; description: string }[]
 ): PromptDraft["menuItems"] {
-  return items.map((item) => ({ id: crypto.randomUUID(), ...item }));
+  return items.map((item, index) => ({
+    id: `${prefix}-${index + 1}`,
+    ...item,
+  }));
 }
 
 export const examples: ExamplePreset[] = [
@@ -33,7 +37,7 @@ export const examples: ExamplePreset[] = [
         "Digunakan semasa daftar masuk di bilik darjah, pada telefon atau komputer guru. Kadang-kadang rangkaian sekolah perlahan.",
       hasilDijangka:
         "Rekod harian tersimpan, peratus kehadiran kelihatan, dan guru boleh cetak atau muat turun laporan bulanan.",
-      menuItems: menu([
+      menuItems: menu("kehadiran", [
         {
           name: "Laman utama",
           description: "Ringkasan kehadiran hari ini dan kelas yang perlu direkod.",
@@ -92,7 +96,7 @@ export const examples: ExamplePreset[] = [
         "Di rumah selepas membaca, atau semasa waktu perpustakaan di sekolah.",
       hasilDijangka:
         "Setiap murid ada senarai buku, jumlah buku semasa, dan guru boleh semak tanpa kumpul buku kertas.",
-      menuItems: menu([
+      menuItems: menu("bacaan", [
         {
           name: "Buku saya",
           description: "Senarai buku yang sudah direkod oleh murid.",
@@ -147,7 +151,7 @@ export const examples: ExamplePreset[] = [
         "Di pejabat sekolah semasa merancang program, atau di rumah pada waktu petang.",
       hasilDijangka:
         "Kalendar ruang kelihatan, status tempahan jelas (menunggu, lulus, tolak), dan pertindihan dapat dielak.",
-      menuItems: menu([
+      menuItems: menu("tempahan", [
         {
           name: "Kalendar",
           description: "Lihat tempahan mengikut tarikh dan ruang.",

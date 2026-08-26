@@ -1,21 +1,20 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import {
-  RotateCcwIcon,
-  SparklesIcon,
-  WandSparklesIcon,
-} from "lucide-react";
+import { useActionState, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
+import { RotateCcwIcon, SparklesIcon, WandSparklesIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { janaPrompt } from "@/app/actions";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { StepHasil } from "@/components/wizard/step-hasil";
 import { StepMasalah } from "@/components/wizard/step-masalah";
 import { StepMenu } from "@/components/wizard/step-menu";
 import { StepSasaran } from "@/components/wizard/step-sasaran";
 import { StepSituasi } from "@/components/wizard/step-situasi";
 import { examples } from "@/lib/examples";
-import { buildPrompt, missingFields } from "@/lib/prompt-builder";
+import { missingFields } from "@/lib/prompt-builder";
 import {
   clearSession,
   hasStoredSession,
@@ -24,6 +23,7 @@ import {
   subscribeSession,
 } from "@/lib/storage";
 import { emptyDraft, type PromptDraft } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const SECTIONS = [
   {
@@ -52,11 +52,19 @@ const SECTIONS = [
   },
 ] as const;
 
-export function PromptWizard() {
-  const [draft, setDraft] = useState<PromptDraft>(emptyDraft);
-  const [showErrors, setShowErrors] = useState(false);
-  const [prompt, setPrompt] = useState("");
-  const [showResult, setShowResult] = useState(false);
+export function PromptWizard({
+  initialDraft,
+  contohId,
+}: {
+  initialDraft?: PromptDraft;
+  contohId?: string;
+}) {
+  const router = useRouter();
+  const [draft, setDraft] = useState<PromptDraft>(
+    () => initialDraft ?? emptyDraft()
+  );
+  const [state, formAction, pending] = useActionState(janaPrompt, null);
+  const prompt = state?.prompt ?? "";
   const hasSaved = useSyncExternalStore(
     subscribeSession,
     hasStoredSession,
@@ -73,31 +81,27 @@ export function PromptWizard() {
     saveSession({ draft, step: 1 });
   }, [draft]);
 
-  const generated = useMemo(() => buildPrompt(draft), [draft]);
-
-  function patchDraft(patch: Partial<PromptDraft>) {
-    setDraft((current) => ({ ...current, ...patch }));
-  }
-
-  function applyExample(id: string) {
-    const example = examples.find((item) => item.id === id);
-    if (!example) return;
-    setDraft(example.draft);
-    setShowErrors(false);
-    setShowResult(false);
-    setPrompt("");
-    document.getElementById("bahagian-masalah")?.scrollIntoView({
+  useEffect(() => {
+    if (!prompt) return;
+    document.getElementById("bahagian-hasil")?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
+  }, [prompt]);
+
+  const issues = useMemo(
+    () => ([1, 2, 3, 4] as const).flatMap((step) => missingFields(step, draft)),
+    [draft]
+  );
+
+  function patchDraft(patch: Partial<PromptDraft>) {
+    setDraft((current) => ({ ...current, ...patch }));
   }
 
   function resume() {
     const saved = loadSession();
     if (!saved) return;
     setDraft(saved.draft);
-    setShowErrors(false);
-    setShowResult(false);
     document.getElementById("bahagian-masalah")?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -106,34 +110,21 @@ export function PromptWizard() {
 
   function restart() {
     clearSession();
-    setDraft(emptyDraft());
-    setPrompt("");
-    setShowErrors(false);
-    setShowResult(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    router.push("/");
   }
-
-  function generate() {
-    const missing = ([1, 2, 3, 4] as const).flatMap((step) =>
-      missingFields(step, draft)
-    );
-    setShowErrors(missing.length > 0);
-    setPrompt(buildPrompt(draft));
-    setShowResult(true);
-    window.setTimeout(() => {
-      document.getElementById("bahagian-hasil")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 50);
-  }
-
-  const issues = ([1, 2, 3, 4] as const).flatMap((step) =>
-    showErrors ? missingFields(step, draft) : []
-  );
 
   return (
     <div className="mx-auto w-full max-w-3xl">
+      {prompt ? (
+        <div className="mb-8">
+          <StepHasil
+            key={prompt.slice(0, 48)}
+            prompt={prompt}
+            draft={draft}
+          />
+        </div>
+      ) : null}
+
       <section className="grid gap-4">
         <p className="inline-flex w-fit items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold tracking-wide text-primary uppercase">
           <SparklesIcon className="size-3.5" />
@@ -143,9 +134,8 @@ export function PromptWizard() {
           Isi empat bahagian ini. Kami susun menjadi prompt AI.
         </h1>
         <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
-          Taip terus dalam ruangan di bawah: masalah, sasaran pengguna,
-          cadangan menu, dan situasi. Kemudian jana prompt untuk ditampal ke
-          Cursor, ChatGPT, atau Claude.
+          Pilih contoh, atau taip sendiri. Kemudian tekan Jana prompt. Salin
+          hasilnya ke Cursor, ChatGPT, atau Claude.
         </p>
         <div className="flex flex-wrap gap-2">
           {hasSaved ? (
@@ -174,92 +164,80 @@ export function PromptWizard() {
         <div>
           <h2 className="font-heading text-lg font-semibold">Isi dengan contoh</h2>
           <p className="text-sm text-muted-foreground">
-            Contoh akan mengisi keempat-empat bahagian. Anda boleh sunting selepas itu.
+            Klik satu kad. Borang akan diisi, kemudian tekan Jana prompt.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          {examples.map((example) => (
-            <button
-              key={example.id}
-              type="button"
-              onClick={() => applyExample(example.id)}
-              className="rounded-lg border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-accent"
-            >
-              <p className="font-medium">{example.title}</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {example.blurb}
-              </p>
-            </button>
-          ))}
+          {examples.map((example) => {
+            const active = contohId === example.id;
+            return (
+              <Link
+                key={example.id}
+                href={`/?contoh=${example.id}#bahagian-masalah`}
+                className={cn(
+                  "rounded-lg border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-accent",
+                  active ? "border-primary ring-2 ring-primary/20" : "border-border"
+                )}
+              >
+                <p className="font-medium">{example.title}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {example.blurb}
+                </p>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
-      <form
-        className="mt-8 grid gap-6 pb-24"
-        onSubmit={(event) => {
-          event.preventDefault();
-          generate();
-        }}
-      >
+      <form action={formAction} className="mt-8 grid gap-6 pb-24">
         <FormSection {...SECTIONS[0]}>
           <StepMasalah
             draft={draft}
             onChange={patchDraft}
-            showErrors={showErrors}
+            showErrors={false}
           />
         </FormSection>
         <FormSection {...SECTIONS[1]}>
           <StepSasaran
             draft={draft}
             onChange={patchDraft}
-            showErrors={showErrors}
+            showErrors={false}
           />
         </FormSection>
         <FormSection {...SECTIONS[2]}>
           <StepMenu
             draft={draft}
             onChange={patchDraft}
-            showErrors={showErrors}
+            showErrors={false}
           />
         </FormSection>
         <FormSection {...SECTIONS[3]}>
           <StepSituasi
             draft={draft}
             onChange={patchDraft}
-            showErrors={showErrors}
+            showErrors={false}
           />
         </FormSection>
 
         <div className="sticky bottom-3 z-10 rounded-lg border border-border bg-card/95 p-3 shadow-lg backdrop-blur sm:flex sm:items-center sm:justify-between sm:gap-4 sm:p-4">
-          {showErrors && issues.length > 0 ? (
-            <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
-              Prompt dijana. Beberapa ruangan masih kosong — anda boleh lengkapkan kemudian.
-            </p>
-          ) : (
-            <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
-              Tekan Jana prompt untuk menyusun brief daripada borang ini.
-            </p>
-          )}
-          <Button type="button" onClick={generate} className="h-10 w-full px-4 sm:w-auto">
+          <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
+            {issues.length > 0
+              ? "Anda boleh jana sekarang. Ruangan kosong akan diisi dengan andaian mudah."
+              : "Tekan Jana prompt, kemudian salin brief ke aplikasi AI."}
+          </p>
+          <button
+            type="submit"
+            disabled={pending}
+            className={cn(
+              buttonVariants(),
+              "h-10 w-full px-4 sm:w-auto disabled:opacity-60"
+            )}
+          >
             <WandSparklesIcon data-icon="inline-start" />
-            Jana prompt
-          </Button>
+            {pending ? "Menjana…" : "Jana prompt"}
+          </button>
         </div>
       </form>
-
-      {showResult ? (
-        <section id="bahagian-hasil" className="mt-8 scroll-mt-24">
-          <h2 className="font-heading mb-4 text-2xl font-semibold tracking-tight">
-            Prompt siap
-          </h2>
-          <StepHasil
-            prompt={prompt || generated}
-            draft={draft}
-            onPromptChange={setPrompt}
-            onRestart={restart}
-          />
-        </section>
-      ) : null}
     </div>
   );
 }

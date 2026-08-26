@@ -50,16 +50,19 @@ export function Blank({
   onChange,
   placeholder,
   ariaLabel,
+  name,
   className,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   ariaLabel: string;
+  name?: string;
   className?: string;
 }) {
   return (
     <input
+      name={name}
       value={value}
       onChange={(event) => onChange(event.target.value)}
       placeholder={placeholder}

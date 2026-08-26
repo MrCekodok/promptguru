@@ -30,6 +30,7 @@ export function StepMasalah({
       >
         <Textarea
           id="masalah"
+          name="masalah"
           value={draft.masalah}
           aria-invalid={masalahError || undefined}
           onChange={(event) => onChange({ masalah: event.target.value })}
@@ -45,6 +46,7 @@ export function StepMasalah({
       >
         <Textarea
           id="siapa"
+          name="siapaTerjejas"
           value={draft.siapaTerjejas}
           onChange={(event) => onChange({ siapaTerjejas: event.target.value })}
           placeholder="Contoh: Guru kelas dan ibu bapa murid tahun 4."
@@ -59,6 +61,7 @@ export function StepMasalah({
       >
         <Textarea
           id="mengapa"
+          name="mengapaPenting"
           value={draft.mengapaPenting}
           onChange={(event) => onChange({ mengapaPenting: event.target.value })}
           placeholder="Contoh: Kehadiran perlu direkod setiap pagi. Jika lewat, sekolah tidak sempat campur tangan."
