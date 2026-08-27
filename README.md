@@ -11,7 +11,13 @@ Isi empat bahagian:
 
 PromptBina menukar jawapan itu kepada brief yang sedia disalin ke Cursor, ChatGPT, Claude, atau pembantu AI yang lain.
 
-Jana prompt berlaku pada pelayar. Draf disimpan pada `localStorage`. Tiada akaun. Jika JavaScript tidak berjalan, borang dihantar ke halaman hasil pada aplikasi yang sama.
+Tiga aplikasi contoh sudah sedia dicuba:
+
+- [HadirKu](/aplikasi/hadirku) — kehadiran kelas
+- [BacaLaju](/aplikasi/bacalaju) — jurnal bacaan murid
+- [DewanSlot](/aplikasi/dewanslot) — tempahan dewan sekolah
+
+Jana prompt berlaku pada pelayar. Draf dan data aplikasi contoh disimpan pada `localStorage`. Tiada akaun. Jika JavaScript tidak berjalan, borang PromptBina dihantar ke halaman hasil pada aplikasi yang sama.
 
 ## Jalankan secara tempatan
 

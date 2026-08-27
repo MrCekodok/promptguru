@@ -26,6 +26,12 @@ export default async function Home({
               </p>
             </div>
           </Link>
+          <Link
+            href="/aplikasi"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Aplikasi contoh
+          </Link>
         </div>
       </header>
 

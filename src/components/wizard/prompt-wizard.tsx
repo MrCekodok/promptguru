@@ -10,6 +10,7 @@ import { StepMasalah } from "@/components/wizard/step-masalah";
 import { StepMenu } from "@/components/wizard/step-menu";
 import { StepSasaran } from "@/components/wizard/step-sasaran";
 import { StepSituasi } from "@/components/wizard/step-situasi";
+import { demoApps } from "@/lib/demo-apps";
 import { examples } from "@/lib/examples";
 import { buildPrompt, missingFields } from "@/lib/prompt-builder";
 import {
@@ -179,26 +180,39 @@ export function PromptWizard({
         <div className="grid gap-3 sm:grid-cols-3">
           {examples.map((example) => {
             const active = contohId === example.id;
+            const demo = demoApps.find((app) => app.contoh === example.id);
             return (
-              <a
+              <div
                 key={example.id}
-                href={`/?contoh=${example.id}#bahagian-masalah`}
-                onClick={(event) => {
-                  event.preventDefault();
-                  applyExample(example.id);
-                }}
                 className={cn(
-                  "rounded-lg border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-accent",
+                  "rounded-lg border bg-card p-4 text-left shadow-sm",
                   active
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-border"
                 )}
               >
-                <p className="font-medium">{example.title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {example.blurb}
-                </p>
-              </a>
+                <a
+                  href={`/?contoh=${example.id}#bahagian-masalah`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    applyExample(example.id);
+                  }}
+                  className="block"
+                >
+                  <p className="font-medium">{example.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {example.blurb}
+                  </p>
+                </a>
+                {demo ? (
+                  <a
+                    href={demo.href}
+                    className="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
+                  >
+                    Cuba {demo.name}
+                  </a>
+                ) : null}
+              </div>
             );
           })}
         </div>
