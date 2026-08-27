@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
@@ -24,25 +23,12 @@ export function AppFrame({
 }) {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-[#f4f7fb]">
-      <header className="sticky top-0 z-20 border-b border-[#d7e0ee] bg-white">
-        <div className={cn("h-1", accentClass)} />
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold tracking-tight">{name}</p>
-            <p className="truncate text-[0.7rem] tracking-wide text-[#5b6d86] uppercase">
-              {tagline}
-            </p>
-          </div>
-          <nav className="flex shrink-0 items-center gap-3 text-sm">
-            <Link href="/aplikasi" className="text-[#1d4ed8] hover:underline">
-              Semua aplikasi
-            </Link>
-            <Link href="/" className="text-[#5b6d86] hover:underline">
-              PromptBina
-            </Link>
-          </nav>
+      <div className="border-b border-[#d7e0ee] bg-white">
+        <div className="mx-auto flex w-full max-w-4xl items-baseline justify-between gap-3 px-4 pt-3 sm:px-6">
+          <p className="text-sm font-semibold tracking-tight">{name}</p>
+          <p className="truncate text-xs text-[#5b6d86]">{tagline}</p>
         </div>
-        <div className="mx-auto flex w-full max-w-4xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
+        <div className="mx-auto flex w-full max-w-4xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
           {nav.map((item) => (
             <button
               key={item.id}
@@ -59,7 +45,7 @@ export function AppFrame({
             </button>
           ))}
         </div>
-      </header>
+      </div>
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>

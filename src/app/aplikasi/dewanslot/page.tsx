@@ -1,9 +1,5 @@
-import { DewanSlotApp } from "@/components/apps/dewanslot-app";
-
-export const metadata = {
-  title: "DewanSlot — Tempahan dewan sekolah",
-};
+import { redirect } from "next/navigation";
 
 export default function DewanSlotPage() {
-  return <DewanSlotApp />;
+  redirect("/?app=dewanslot");
 }

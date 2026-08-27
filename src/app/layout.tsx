@@ -29,6 +29,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <style
           dangerouslySetInnerHTML={{
             __html: `
+              html, body { margin: 0; min-height: 100%; background: #f4f7fb; color: #12203a; font-family: ui-sans-serif, system-ui, sans-serif; }
+              a { color: #1d4ed8; }
               textarea, input, select { width: 100%; max-width: 100%; box-sizing: border-box; font: inherit; }
               textarea { min-height: 7rem; display: block; }
               input, select, textarea { border: 1px solid #c5d4ea; border-radius: 8px; padding: .45rem .65rem; background: #fff; }
