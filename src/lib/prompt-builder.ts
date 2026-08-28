@@ -72,7 +72,7 @@ export function missingFields(step: 1 | 2 | 3 | 4, draft: PromptDraft) {
   return missing;
 }
 
-export function buildPrompt(draft: PromptDraft) {
+export function buildPrompt(draft: PromptDraft, extras: string[] = []) {
   const nama = draft.namaAplikasi.trim() || "aplikasi baharu";
   const platform = draft.platform
     ? platformLabel[draft.platform]
@@ -151,6 +151,17 @@ ${situasi}
 ## Ciri wajib (versi pertama)
 
 ${ciri || "- Satu aliran utama yang menyelesaikan masalah di atas."}
+
+## Cadangan tambahan yang dipilih
+
+${
+  extras.filter((item) => item.trim()).length > 0
+    ? extras
+        .filter((item) => item.trim())
+        .map((item) => `- ${item.trim()}`)
+        .join("\n")
+    : "- (Tiada cadangan tambahan dipilih.)"
+}
 
 ## Arahan pelaksanaan
 

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { RotateCcwIcon, SparklesIcon, WandSparklesIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { CadanganDialog } from "@/components/wizard/cadangan-dialog";
 import { StepHasil } from "@/components/wizard/step-hasil";
 import { StepMasalah } from "@/components/wizard/step-masalah";
 import { StepMenu } from "@/components/wizard/step-menu";
@@ -13,6 +14,10 @@ import { StepSituasi } from "@/components/wizard/step-situasi";
 import { demoApps } from "@/lib/demo-apps";
 import { examples } from "@/lib/examples";
 import { buildPrompt, missingFields } from "@/lib/prompt-builder";
+import {
+  suggestImprovements,
+  type PromptSuggestion,
+} from "@/lib/suggestions";
 import {
   clearSession,
   hasStoredSession,
@@ -61,6 +66,9 @@ export function PromptWizard({
     () => initialDraft ?? emptyDraft()
   );
   const [prompt, setPrompt] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<PromptSuggestion[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const hasSaved = useSyncExternalStore(
     subscribeSession,
     hasStoredSession,
@@ -121,10 +129,36 @@ export function PromptWizard({
     setPrompt("");
   }
 
-  function generate(event?: { preventDefault: () => void }) {
+  function openCadangan(event?: { preventDefault: () => void }) {
     event?.preventDefault();
-    const nextPrompt = buildPrompt(draft);
-    setPrompt(nextPrompt);
+    const next = suggestImprovements(draft);
+    setSuggestions(next);
+    setSelected(new Set());
+    setDialogOpen(true);
+  }
+
+  function toggleSuggestion(id: string) {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllSuggestions() {
+    setSelected((current) => {
+      if (current.size === suggestions.length) return new Set();
+      return new Set(suggestions.map((item) => item.id));
+    });
+  }
+
+  function confirmGenerate() {
+    const extras = suggestions
+      .filter((item) => selected.has(item.id))
+      .map((item) => item.promptLine);
+    setPrompt(buildPrompt(draft, extras));
+    setDialogOpen(false);
   }
 
   return (
@@ -144,8 +178,9 @@ export function PromptWizard({
           Isi empat bahagian ini. Kami susun menjadi prompt AI.
         </h1>
         <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
-          Pilih contoh, atau taip sendiri. Kemudian tekan Jana prompt. Salin
-          hasilnya ke Cursor, ChatGPT, atau Claude.
+          Pilih contoh, atau taip sendiri. Kemudian tekan Jana prompt. Pilih
+          cadangan penambahbaikan jika mahu, lalu salin hasilnya ke Cursor,
+          ChatGPT, atau Claude.
         </p>
         <div className="flex flex-wrap gap-2">
           {hasSaved ? (
@@ -223,7 +258,7 @@ export function PromptWizard({
         method="post"
         action="/hasil"
         className="mt-8 grid gap-6 pb-24"
-        onSubmit={generate}
+        onSubmit={openCadangan}
       >
         <FormSection {...SECTIONS[0]}>
           <StepMasalah
@@ -258,19 +293,29 @@ export function PromptWizard({
           <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
             {issues.length > 0
               ? "Anda boleh jana sekarang. Ruangan kosong akan diisi dengan andaian mudah."
-              : "Tekan Jana prompt, kemudian salin brief ke aplikasi AI."}
+              : "Tekan Jana prompt. Cadangan penambahbaikan akan dipaparkan dahulu."}
           </p>
           <button
             type="submit"
             className={cn(buttonVariants(), "h-10 w-full px-4 sm:w-auto")}
             style={{ background: "#1d4ed8", color: "#fff" }}
-            onClick={generate}
+            onClick={openCadangan}
           >
             <WandSparklesIcon data-icon="inline-start" />
             Jana prompt
           </button>
         </div>
       </form>
+
+      <CadanganDialog
+        open={dialogOpen}
+        suggestions={suggestions}
+        selected={selected}
+        onToggle={toggleSuggestion}
+        onToggleAll={toggleAllSuggestions}
+        onCancel={() => setDialogOpen(false)}
+        onConfirm={confirmGenerate}
+      />
     </div>
   );
 }
