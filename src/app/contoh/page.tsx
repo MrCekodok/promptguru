@@ -49,9 +49,10 @@ export default function HalamanContohPage() {
               <div className="mt-auto flex flex-wrap gap-2 pt-2">
                 <Link
                   href={app.href}
-                  className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+                  className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white"
+                  style={{ color: "#fff" }}
                 >
-                  Buka {app.name}
+                  Papar Contoh
                 </Link>
                 <Link
                   href={`/?contoh=${app.contoh}`}
