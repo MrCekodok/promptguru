@@ -6,6 +6,8 @@ import type { PromptSuggestion } from "@/lib/suggestions";
 
 export function CadanganDialog({
   open,
+  loading,
+  error,
   suggestions,
   selected,
   onToggle,
@@ -14,6 +16,8 @@ export function CadanganDialog({
   onConfirm,
 }: {
   open: boolean;
+  loading: boolean;
+  error: string | null;
   suggestions: PromptSuggestion[];
   selected: Set<string>;
   onToggle: (id: string) => void;
@@ -58,6 +62,7 @@ export function CadanganDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="cadangan-title"
+        aria-busy={loading}
         onClick={(event) => event.stopPropagation()}
         style={{
           width: "100%",
@@ -75,30 +80,56 @@ export function CadanganDialog({
             id="cadangan-title"
             style={{ margin: 0, fontSize: "1.25rem", fontWeight: 650 }}
           >
-            Cadangan penambahbaikan
+            Cadangan untuk masalah anda
           </h2>
           <p style={{ margin: "0.5rem 0 0", color: "#3d5273", lineHeight: 1.5 }}>
-            Berdasarkan butiran borang. Tanda cadangan yang mahu dimasukkan ke
-            dalam prompt.
+            Gemini mencadangkan idea yang merawat masalah dalam borang. Tanda
+            yang mahu dimasukkan ke dalam prompt.
           </p>
-          <button
-            type="button"
-            onClick={onToggleAll}
-            style={{
-              marginTop: "0.75rem",
-              background: "none",
-              border: 0,
-              padding: 0,
-              color: "#1d4ed8",
-              cursor: "pointer",
-              font: "inherit",
-            }}
-          >
-            {allOn ? "Nyahpilih semua" : "Pilih semua"}
-          </button>
+          {!loading && suggestions.length > 0 ? (
+            <button
+              type="button"
+              onClick={onToggleAll}
+              style={{
+                marginTop: "0.75rem",
+                background: "none",
+                border: 0,
+                padding: 0,
+                color: "#1d4ed8",
+                cursor: "pointer",
+                font: "inherit",
+              }}
+            >
+              {allOn ? "Nyahpilih semua" : "Pilih semua"}
+            </button>
+          ) : null}
         </div>
 
-        {suggestions.length === 0 ? (
+        {loading ? (
+          <p style={{ padding: "0 1.25rem 1.25rem", color: "#3d5273" }}>
+            Sedang menganalisis masalah anda dan menyediakan cadangan idea...
+          </p>
+        ) : (
+          <>
+            {error ? (
+              <p
+                role="status"
+                style={{
+                  margin: "0 1.25rem 0.75rem",
+                  padding: "0.7rem 0.85rem",
+                  borderRadius: 8,
+                  background: "#fff7ed",
+                  color: "#9a3412",
+                  fontSize: "0.9rem",
+                  lineHeight: 1.45,
+                }}
+              >
+                {error} Cadangan sandaran dipaparkan. Anda masih boleh pilih
+                dan jana prompt.
+              </p>
+            ) : null}
+
+            {suggestions.length === 0 ? (
           <p style={{ padding: "0 1.25rem 1rem", color: "#3d5273" }}>
             Tiada cadangan tambahan. Anda boleh jana prompt seperti yang diisi.
           </p>
@@ -166,6 +197,8 @@ export function CadanganDialog({
               );
             })}
           </ul>
+            )}
+          </>
         )}
 
         <div
@@ -197,20 +230,24 @@ export function CadanganDialog({
           <button
             type="button"
             onClick={onConfirm}
+            disabled={loading}
             style={{
               height: 40,
               padding: "0 1rem",
               borderRadius: 8,
               border: 0,
-              background: "#1d4ed8",
+              background: loading ? "#93c5fd" : "#1d4ed8",
               color: "#fff",
-              cursor: "pointer",
+              cursor: loading ? "wait" : "pointer",
               font: "inherit",
               fontWeight: 600,
             }}
           >
-            Jana prompt
-            {selected.size > 0 ? ` (${selected.size})` : ""}
+            {loading
+              ? "Menganalisis..."
+              : selected.size > 0
+                ? `Jana prompt (${selected.size})`
+                : "Jana prompt"}
           </button>
         </div>
       </div>

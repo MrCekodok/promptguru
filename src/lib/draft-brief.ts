@@ -69,26 +69,27 @@ export function draftToBrief(draft: PromptDraft) {
     .map((item) => `- ${item}`)
     .join("\n");
 
-  return `Nama aplikasi: ${draft.namaAplikasi.trim() || "(belum diisi)"}
+  return `## MASALAH UTAMA (pusat setiap cadangan)
+${draft.masalah.trim() || "(belum diisi — infer dari butiran lain, tetapi tetap jadi pusat)"}
+Siapa terjejas: ${draft.siapaTerjejas.trim() || "(kosong)"}
+Mengapa penting sekarang: ${draft.mengapaPenting.trim() || "(kosong)"}
+Hasil yang dijangka selepas masalah selesai: ${draft.hasilDijangka.trim() || "(kosong)"}
+
+## Konteks pengguna
+Sasaran: ${draft.sasaranPengguna.trim() || "(kosong)"}
+Matlamat: ${draft.matlamatPengguna.trim() || "(kosong)"}
+Bila dan bagaimana digunakan: ${draft.konteksPenggunaan.trim() || "(kosong)"}
+
+## Aplikasi yang hendak dibina
+Nama: ${draft.namaAplikasi.trim() || "(belum diisi)"}
 Platform: ${draft.platform || "(belum dipilih)"}
 Bahasa antara muka: ${draft.bahasaUI || "(belum dipilih)"}
-
-Masalah:
-${draft.masalah.trim() || "(kosong)"}
-Siapa terjejas: ${draft.siapaTerjejas.trim() || "(kosong)"}
-Mengapa penting: ${draft.mengapaPenting.trim() || "(kosong)"}
-
-Sasaran pengguna: ${draft.sasaranPengguna.trim() || "(kosong)"}
-Matlamat pengguna: ${draft.matlamatPengguna.trim() || "(kosong)"}
-Konteks penggunaan: ${draft.konteksPenggunaan.trim() || "(kosong)"}
-Hasil dijangka: ${draft.hasilDijangka.trim() || "(kosong)"}
+Bila digunakan: ${draft.bilaDigunakan.trim() || "(kosong)"}
+Tempat: ${draft.tempatPenggunaan.trim() || "(kosong)"}
+Gaya: ${draft.gayaRekaBentuk.trim() || "(kosong)"}
 
 Menu:
 ${menu || "(tiada menu)"}
-
-Bila digunakan: ${draft.bilaDigunakan.trim() || "(kosong)"}
-Tempat penggunaan: ${draft.tempatPenggunaan.trim() || "(kosong)"}
-Gaya reka bentuk: ${draft.gayaRekaBentuk.trim() || "(kosong)"}
 
 Ciri wajib:
 ${ciri || "(tiada)"}

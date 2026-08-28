@@ -3,21 +3,25 @@ import { NextResponse } from "next/server";
 import { draftToBrief, sanitizeDraft } from "@/lib/draft-brief";
 import type { PromptSuggestion } from "@/lib/suggestions";
 
-const SYSTEM_PROMPT = `Anda penganalisis produk untuk brief pembinaan web app.
-Tugas: baca SEMUA butiran borang, kemudian cadangkan idea TAMBAHAN yang belum ada dalam brief.
+const SYSTEM_PROMPT = `Anda penganalisis produk. Tugas anda: cadangkan idea TAMBAHAN untuk web app yang MERAWAT MASALAH yang pengguna tulis.
+
+Keutamaan mutlak:
+1. Baca "MASALAH UTAMA" dahulu. Setiap cadangan mesti menjawab masalah itu secara langsung.
+2. Jangan beri nasihat UX generik (keadaan kosong, susun atur telefon, lorem ipsum, tanpa log masuk) melainkan ia jelas merawat masalah yang ditulis.
+3. Jika idea tidak dapat dihubung dengan masalah pengguna dalam satu ayat, buang idea itu.
+4. Gunakan butiran lain (menu, sasaran, kekangan) hanya sebagai konteks, bukan untuk menukar topik.
 
 Peraturan:
-- Bahasa Melayu, ayat pendek, mudah difahami guru dan staf sekolah.
-- 6 idea. Setiap idea mesti khusus kepada aplikasi ini, bukan nasihat UX generik.
-- Jangan ulang menu, ciri wajib, atau perkara yang sudah ditulis.
-- Hormati "di luar skop" dan kekangan. Jangan cadangkan log masuk, e-mel sebenar, pembayaran, atau pangkalan data luar jika brief melarangnya.
-- Idea mestilah ciri, aliran, peranan, laporan, atau paparan yang pengguna boleh pilih untuk dimasukkan ke prompt pembinaan.
+- Bahasa Melayu, ayat pendek.
+- 6 idea. Setiap idea khusus kepada masalah ini.
+- Jangan ulang menu atau ciri wajib yang sudah ada.
+- Hormati "di luar skop" dan kekangan.
 
 Setiap idea:
-- id: slug pendek (huruf kecil, sempang)
-- title: 3–8 patah perkataan
-- detail: 1–2 ayat mengapa idea ini berguna untuk app ini
-- promptLine: SATU arahan bina yang lengkap, sedia tampal ke prompt pembangun
+- id: slug pendek
+- title: 3–8 patah perkataan, berkaitan masalah
+- detail: 1–2 ayat. Ayat pertama mesti nyatakan bagaimana idea ini merawat masalah pengguna.
+- promptLine: SATU arahan bina yang merujuk masalah tersebut, sedia tampal ke prompt pembangun
 
 Pulangkan JSON sahaja berbentuk {"suggestions":[...]}`;
 
@@ -109,7 +113,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Borang tidak sah." }, { status: 400 });
   }
 
-  const model = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  const requested = process.env.GEMINI_MODEL?.trim() || "gemini-3.6-flash";
+  const model = /gemini-2\.[05]/.test(requested)
+    ? "gemini-3.6-flash"
+    : requested;
   const brief = draftToBrief(draft);
 
   try {
@@ -128,13 +135,13 @@ export async function POST(request: Request) {
               role: "user",
               parts: [
                 {
-                  text: `Analisis brief ini dan pulangkan JSON berbentuk {"suggestions":[...]}.\n\n${brief}`,
+                  text: `Cadangkan idea yang MERAWAT masalah utama di bawah. Jangan lari topik.\n\n${brief}`,
                 },
               ],
             },
           ],
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.4,
             responseMimeType: "application/json",
           },
         }),

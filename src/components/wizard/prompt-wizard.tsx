@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { RotateCcwIcon, SparklesIcon, WandSparklesIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { demoApps } from "@/lib/demo-apps";
 import { examples } from "@/lib/examples";
 import { buildPrompt, missingFields } from "@/lib/prompt-builder";
 import {
+  fetchGeminiSuggestions,
   suggestImprovements,
   type PromptSuggestion,
 } from "@/lib/suggestions";
@@ -67,8 +68,11 @@ export function PromptWizard({
   );
   const [prompt, setPrompt] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [loadingCadangan, setLoadingCadangan] = useState(false);
+  const [cadanganError, setCadanganError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<PromptSuggestion[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const cadanganRequest = useRef<AbortController | null>(null);
   const hasSaved = useSyncExternalStore(
     subscribeSession,
     hasStoredSession,
@@ -129,12 +133,37 @@ export function PromptWizard({
     setPrompt("");
   }
 
-  function openCadangan(event?: { preventDefault: () => void }) {
+  function closeCadangan() {
+    cadanganRequest.current?.abort();
+    cadanganRequest.current = null;
+    setDialogOpen(false);
+    setLoadingCadangan(false);
+  }
+
+  async function openCadangan(event?: { preventDefault: () => void }) {
     event?.preventDefault();
-    const next = suggestImprovements(draft);
-    setSuggestions(next);
-    setSelected(new Set());
+    cadanganRequest.current?.abort();
+    const controller = new AbortController();
+    cadanganRequest.current = controller;
     setDialogOpen(true);
+    setLoadingCadangan(true);
+    setCadanganError(null);
+    setSuggestions([]);
+    setSelected(new Set());
+    try {
+      const next = await fetchGeminiSuggestions(draft, controller.signal);
+      setSuggestions(next);
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Gemini tidak dapat menganalisis masalah.";
+      setCadanganError(message);
+      setSuggestions(suggestImprovements(draft));
+    } finally {
+      if (!controller.signal.aborted) setLoadingCadangan(false);
+    }
   }
 
   function toggleSuggestion(id: string) {
@@ -154,6 +183,7 @@ export function PromptWizard({
   }
 
   function confirmGenerate() {
+    if (loadingCadangan) return;
     const extras = suggestions
       .filter((item) => selected.has(item.id))
       .map((item) => item.promptLine);
@@ -178,9 +208,9 @@ export function PromptWizard({
           Isi empat bahagian ini. Kami susun menjadi prompt AI.
         </h1>
         <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
-          Pilih contoh, atau taip sendiri. Kemudian tekan Jana prompt. Pilih
-          cadangan penambahbaikan jika mahu, lalu salin hasilnya ke Cursor,
-          ChatGPT, atau Claude.
+          Pilih contoh, atau taip sendiri. Kemudian tekan Jana prompt. Gemini
+          akan cadangkan idea yang merawat masalah anda. Pilih yang mahu, lalu
+          salin hasilnya ke Cursor, ChatGPT, atau Claude.
         </p>
         <div className="flex flex-wrap gap-2">
           {hasSaved ? (
@@ -293,7 +323,7 @@ export function PromptWizard({
           <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
             {issues.length > 0
               ? "Anda boleh jana sekarang. Ruangan kosong akan diisi dengan andaian mudah."
-              : "Tekan Jana prompt. Cadangan penambahbaikan akan dipaparkan dahulu."}
+              : "Tekan Jana prompt. Gemini akan cadangkan idea mengikut masalah anda."}
           </p>
           <button
             type="submit"
@@ -309,11 +339,13 @@ export function PromptWizard({
 
       <CadanganDialog
         open={dialogOpen}
+        loading={loadingCadangan}
+        error={cadanganError}
         suggestions={suggestions}
         selected={selected}
         onToggle={toggleSuggestion}
         onToggleAll={toggleAllSuggestions}
-        onCancel={() => setDialogOpen(false)}
+        onCancel={closeCadangan}
         onConfirm={confirmGenerate}
       />
     </div>

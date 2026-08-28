@@ -7,6 +7,32 @@ export type PromptSuggestion = {
   promptLine: string;
 };
 
+export async function fetchGeminiSuggestions(
+  draft: PromptDraft,
+  signal?: AbortSignal
+): Promise<PromptSuggestion[]> {
+  const response = await fetch("/api/cadangan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ draft }),
+    signal,
+  });
+  const data = (await response.json().catch(() => ({}))) as {
+    error?: string;
+    suggestions?: PromptSuggestion[];
+  };
+  if (!response.ok) {
+    throw new Error(
+      data.error?.trim() || "Gagal mendapat cadangan daripada Gemini."
+    );
+  }
+  const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+  if (suggestions.length === 0) {
+    throw new Error("Tiada cadangan daripada Gemini.");
+  }
+  return suggestions;
+}
+
 function blob(draft: PromptDraft) {
   return [
     draft.masalah,
