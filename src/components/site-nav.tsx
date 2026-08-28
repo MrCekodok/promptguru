@@ -31,7 +31,7 @@ export function SiteNav() {
         }}
       >
         <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
-          <strong>PromptBina</strong>
+          <strong>Prompt AI-GAF</strong>
           <span
             style={{
               display: "block",

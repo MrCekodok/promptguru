@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${title} — PromptBina</title>
+  <title>${title} — Prompt AI-GAF</title>
   <style>
     :root { color-scheme: light; }
     body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; background: #f4f7fb; color: #12203a; }
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 <body>
   <header>
     <div class="bar"></div>
-    <div class="wrap">PromptBina</div>
+    <div class="wrap">Prompt AI-GAF</div>
   </header>
   <main>
     <h1>Prompt siap</h1>

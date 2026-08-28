@@ -1,4 +1,4 @@
-# PromptBina
+# Prompt AI-GAF
 
 Aplikasi web untuk membantu pengguna menyusun **prompt AI** sebelum membina aplikasi lain.
 
@@ -9,7 +9,7 @@ Isi empat bahagian:
 3. **Cadangan menu** — halaman atau laluan dalam aplikasi
 4. **Lembaran situasi** — isi tempat kosong tentang nama, platform, masa, tempat, ciri wajib, dan kekangan
 
-PromptBina menukar jawapan itu kepada brief yang sedia disalin ke Cursor, ChatGPT, Claude, atau pembantu AI yang lain.
+Prompt AI-GAF menukar jawapan itu kepada brief yang sedia disalin ke Cursor, ChatGPT, Claude, atau pembantu AI yang lain.
 
 Tiga aplikasi contoh ada di [Halaman contoh](/contoh):
 
@@ -17,7 +17,7 @@ Tiga aplikasi contoh ada di [Halaman contoh](/contoh):
 - [BacaLaju](/contoh/bacalaju) — jurnal bacaan murid
 - [DewanSlot](/contoh/dewanslot) — tempahan dewan sekolah
 
-Jana prompt berlaku pada pelayar. Draf dan data aplikasi contoh disimpan pada `localStorage`. Tiada akaun. Jika JavaScript tidak berjalan, borang PromptBina dihantar ke halaman hasil pada aplikasi yang sama.
+Jana prompt berlaku pada pelayar. Draf dan data aplikasi contoh disimpan pada `localStorage`. Tiada akaun. Jika JavaScript tidak berjalan, borang Prompt AI-GAF dihantar ke halaman hasil pada aplikasi yang sama.
 
 ## Jalankan secara tempatan
 

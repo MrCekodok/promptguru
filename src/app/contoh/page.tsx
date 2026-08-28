@@ -3,7 +3,7 @@ import Link from "next/link";
 import { demoApps } from "@/lib/demo-apps";
 
 export const metadata = {
-  title: "Halaman contoh — PromptBina",
+  title: "Halaman contoh — Prompt AI-GAF",
 };
 
 export default function HalamanContohPage() {
@@ -13,7 +13,7 @@ export default function HalamanContohPage() {
         Halaman contoh
       </h1>
       <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-        Tiga aplikasi sekolah yang dibina daripada contoh PromptBina. Buka
+        Tiga aplikasi sekolah yang dibina daripada contoh Prompt AI-GAF. Buka
         satu, cuba alirannya, kemudian kembali ke Jana prompt untuk salin
         brief.
       </p>

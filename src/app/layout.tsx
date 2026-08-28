@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PromptBina — Jana prompt untuk membina aplikasi",
+  title: "Prompt AI-GAF — Jana prompt untuk membina aplikasi",
   description:
-    "Isi masalah, sasaran pengguna, cadangan menu, dan situasi. PromptBina menyusunnya menjadi prompt AI yang sedia digunakan untuk membina aplikasi.",
+    "Isi masalah, sasaran pengguna, cadangan menu, dan situasi. Prompt AI-GAF menyusunnya menjadi prompt AI yang sedia digunakan untuk membina aplikasi.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
