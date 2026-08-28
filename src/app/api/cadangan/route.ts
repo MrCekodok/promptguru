@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { draftToBrief, sanitizeDraft } from "@/lib/draft-brief";
+import { geminiApiKey, geminiModel } from "@/lib/gemini-env";
 import type { PromptSuggestion } from "@/lib/suggestions";
 
 const SYSTEM_PROMPT = `Anda penganalisis produk. Tugas anda: cadangkan idea TAMBAHAN untuk web app yang MERAWAT MASALAH yang pengguna tulis.
@@ -89,7 +90,7 @@ function friendlyGeminiError(message?: string) {
 }
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = geminiApiKey();
   if (!apiKey) {
     return NextResponse.json(
       { error: "Kunci Gemini belum disediakan." },
@@ -113,10 +114,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Borang tidak sah." }, { status: 400 });
   }
 
-  const requested = process.env.GEMINI_MODEL?.trim() || "gemini-3.6-flash";
-  const model = /gemini-2\.[05]/.test(requested)
-    ? "gemini-3.6-flash"
-    : requested;
+  const model = geminiModel();
   const brief = draftToBrief(draft);
 
   try {
