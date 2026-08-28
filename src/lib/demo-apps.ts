@@ -1,7 +1,7 @@
 export const demoApps = [
   {
     id: "hadirku",
-    href: "/",
+    href: "/contoh/hadirku",
     contoh: "kehadiran",
     name: "HadirKu",
     title: "Kehadiran kelas",
@@ -13,7 +13,7 @@ export const demoApps = [
   },
   {
     id: "bacalaju",
-    href: "/?app=bacalaju",
+    href: "/contoh/bacalaju",
     contoh: "bacaan",
     name: "BacaLaju",
     title: "Jurnal bacaan murid",
@@ -25,7 +25,7 @@ export const demoApps = [
   },
   {
     id: "dewanslot",
-    href: "/?app=dewanslot",
+    href: "/contoh/dewanslot",
     contoh: "tempahan",
     name: "DewanSlot",
     title: "Tempahan dewan sekolah",

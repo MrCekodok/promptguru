@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 
+import { SiteNav } from "@/components/site-nav";
 import "./globals.css";
 
 const inter = Inter({
@@ -38,7 +39,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             `,
           }}
         />
-        {children}
+        <SiteNav />
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </body>
     </html>
   );

@@ -174,7 +174,8 @@ export function PromptWizard({
         <div>
           <h2 className="font-heading text-lg font-semibold">Isi dengan contoh</h2>
           <p className="text-sm text-muted-foreground">
-            Klik satu kad. Borang akan diisi, kemudian tekan Jana prompt.
+            Klik satu kad untuk isi borang. Cuba aplikasi sedia ada melalui
+            pautan di bawah kad, atau buka Halaman contoh.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">

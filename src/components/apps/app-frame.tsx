@@ -25,8 +25,16 @@ export function AppFrame({
     <div className="flex min-h-full flex-1 flex-col bg-[#f4f7fb]">
       <div className="border-b border-[#d7e0ee] bg-white">
         <div className="mx-auto flex w-full max-w-4xl items-baseline justify-between gap-3 px-4 pt-3 sm:px-6">
-          <p className="text-sm font-semibold tracking-tight">{name}</p>
-          <p className="truncate text-xs text-[#5b6d86]">{tagline}</p>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold tracking-tight">{name}</p>
+            <p className="truncate text-xs text-[#5b6d86]">{tagline}</p>
+          </div>
+          <a
+            href="/contoh"
+            className="shrink-0 text-xs text-[#1d4ed8] hover:underline"
+          >
+            Halaman contoh
+          </a>
         </div>
         <div className="mx-auto flex w-full max-w-4xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
           {nav.map((item) => (

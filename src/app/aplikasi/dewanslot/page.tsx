@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function DewanSlotPage() {
-  redirect("/?app=dewanslot");
+export default function DewanSlotRedirect() {
+  redirect("/contoh/dewanslot");
 }

@@ -11,12 +11,11 @@ Isi empat bahagian:
 
 PromptBina menukar jawapan itu kepada brief yang sedia disalin ke Cursor, ChatGPT, Claude, atau pembantu AI yang lain.
 
-Tiga aplikasi contoh sudah sedia dicuba pada laman utama:
+Tiga aplikasi contoh ada di [Halaman contoh](/contoh):
 
-- [HadirKu](/) — kehadiran kelas
-- [BacaLaju](/?app=bacalaju) — jurnal bacaan murid
-- [DewanSlot](/?app=dewanslot) — tempahan dewan sekolah
-- [Jana prompt](/?app=bina) — penjana brief AI
+- [HadirKu](/contoh/hadirku) — kehadiran kelas
+- [BacaLaju](/contoh/bacalaju) — jurnal bacaan murid
+- [DewanSlot](/contoh/dewanslot) — tempahan dewan sekolah
 
 Jana prompt berlaku pada pelayar. Draf dan data aplikasi contoh disimpan pada `localStorage`. Tiada akaun. Jika JavaScript tidak berjalan, borang PromptBina dihantar ke halaman hasil pada aplikasi yang sama.
 
